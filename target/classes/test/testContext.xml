@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:c="http://www.springframework.org/schema/c"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+       xmlns:jpa="http://www.springframework.org/schema/data/jpa"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc.xsd http://www.springframework.org/schema/data/jpa http://www.springframework.org/schema/data/jpa/spring-jpa.xsd http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+
+    <beans profile="test">
+
+        <context:property-placeholder location="classpath:config/project.properties" file-encoding="UTF-8"/>
+        <!--<util:properties location="classpath:config/project.properties"/>-->
+        <context:component-scan base-package="iy.jspspring.training"/>
+        <context:annotation-config/>
+
+        <mvc:annotation-driven>
+            <mvc:message-converters>
+                <bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter"/>
+            </mvc:message-converters>
+        </mvc:annotation-driven>
+
+        <bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver"
+              p:prefix="/WEB-INF/views/jsp/"
+              p:suffix=".jsp"
+        />
+
+        <jdbc:initialize-database data-source="dataSource">
+            <jdbc:script location="classpath:dump/dump12.sql"/>
+        </jdbc:initialize-database>
+
+        <tx:annotation-driven transaction-manager="transactionManager"/>
+
+        <jpa:repositories base-package="iy.jspspring.training.dao"
+                          entity-manager-factory-ref="entityManagerFactory"
+                          transaction-manager-ref="transactionManager"/>
+
+        <util:properties id="jpaProperties">
+            <prop key="hibernate.hbm2ddl.auto">select</prop>
+            <prop key="hibernate.max_fetch_depth">3</prop>
+            <prop key="hibernate.jdbc.fetch_size">50</prop>
+            <prop key="hibernate.jdbc.batch_size">10</prop>
+            <prop key="hibernate.show_sql">true</prop>
+            <prop key="hibernate.use_sql_comments">true</prop>
+            <prop key="hibernate.generate_statistics">true</prop>
+        </util:properties>
+
+        <util:map id="beans">
+            <entry key="iy.training.beans:name=ProSpring4UserApp" value-ref="appStatistics"/>
+            <entry key="iy.training.hibernate:name=ProSpring4Statistics" value-ref="hibernateStatistics"/>
+        </util:map>
+
+        <bean id="vendorAdapter" class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter"/>
+
+        <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource"
+              p:driverClassName="${hibernate.dataSource.driverClassName}"
+              p:url="${hibernate.dataSource.url.test}"
+              p:username="${hibernate.dataSource.username}"
+              p:password="${hibernate.dataSource.password}"/>
+
+        <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager"
+              p:entityManagerFactory-ref="entityManagerFactory"/>
+
+        <bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean"
+              p:dataSource-ref="dataSource"
+              p:jpaVendorAdapter-ref="vendorAdapter"
+              p:packagesToScan="${hibernate.sessionFactory.packagesToScan}"
+              p:jpaProperties-ref="jpaProperties"/>
+
+        <bean id="appStatistics" class="iy.jspspring.training.debug.AppStatisticsImpl"/>
+
+        <bean id="hibernateStatistics" class="iy.jspspring.training.debug.HibernateStatisticsFactoryBean"
+              c:entityManagerFactory-ref="entityManagerFactory"/>
+
+        <bean id="exporter" class="org.springframework.jmx.export.MBeanExporter"
+              p:beans-ref="beans"/>
+
+        <bean id="postProcessor" class="iy.jspspring.training.debug.ProjectBeanPostProcessor"/>
+
+        <!--StandardProjectValidatorUtil-->
+        <bean id="defaultValidatorUtil" class="iy.jspspring.training.util.validator.impl.DefaultValidatorUtil">
+            <constructor-arg name="validator">
+                <bean class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean"/>
+            </constructor-arg>
+        </bean>
+
+        <!--<bean id="projectValidatorUtil" class="iy.jspspring.training.validator.ProjectValidatorUtil"-->
+        <!--p:validator-ref="validator"-->
+        <!--p:generator-ref=""-->
+        <!--/>-->
+        <!--<bean id="version" class="java.lang.String" c:original="1.0"/>-->
+
+        <!--<bean id="validatorErrors" class="iy.jspspring.training.validator.AbstractProjectValidatorErrors">-->
+        <!--<lookup-method name="getVersion" bean="version"/>-->
+        <!--</bean>-->
+
+        <!--<bean class="iy.jspspring.training.validator.AbstractProjectBeansGenerator">-->
+        <!--<lookup-method name="generate" bean="validatorErrors"/>-->
+        <!--</bean>-->
+
+        <!--<bean id="validatorUtil" class="iy.jspspring.training.validator.util.ProjectValidatorUtil">-->
+            <!--<property name="validator">-->
+                <!--<bean class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean"/>-->
+            <!--</property>-->
+            <!--<property name="generator">-->
+                <!--<bean class="iy.jspspring.training.validator.generator.MyGenerator"/>-->
+            <!--</property>-->
+            <!--&lt;!&ndash;<constructor-arg name="validator">&ndash;&gt;-->
+
+            <!--&lt;!&ndash;</constructor-arg>&ndash;&gt;-->
+            <!--&lt;!&ndash;<constructor-arg name="generator">&ndash;&gt;-->
+
+            <!--&lt;!&ndash;</constructor-arg>&ndash;&gt;-->
+        <!--</bean>-->
+
+    </beans>
+
+</beans>

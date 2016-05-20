@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:c="http://www.springframework.org/schema/c"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+
+    <!-- Activates various annotations to be detected in bean classes -->
+    <context:annotation-config/>
+
+    <!-- Enables the Spring MVC @Controller programming model -->
+    <mvc:annotation-driven>
+        <mvc:message-converters>
+            <bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter"/>
+        </mvc:message-converters>
+    </mvc:annotation-driven>
+
+    <!-- Scans the classpath for annotated components that will be auto-registered as Spring beans -->
+    <context:component-scan base-package="iy.jspspring.training"/>
+
+    <!-- Interceptors -->
+    <mvc:interceptors>
+        <mvc:interceptor>
+            <mvc:mapping path="/*"/>
+            <bean class="org.springframework.web.servlet.i18n.LocaleChangeInterceptor"
+                  p:paramName="lang"/>
+        </mvc:interceptor>
+        <mvc:interceptor>
+            <mvc:mapping path="/*"/>
+            <bean class="org.springframework.web.servlet.theme.ThemeChangeInterceptor"
+                  p:paramName="theme"/>
+        </mvc:interceptor>
+    </mvc:interceptors>
+
+    <!-- Configurer for TilesUrlViewResolver -->
+    <bean id="tilesConfigurer"
+          class="org.springframework.web.servlet.view.tiles3.TilesConfigurer"
+          p:definitions-ref="tilesDefinitions"
+          p:completeAutoload="true"
+    />
+    <util:list id="tilesDefinitions">
+        <value>${spring.tilesConfigurer.tilesDefinitions.jsp}</value>
+        <value>${spring.tilesConfigurer.tilesDefinitions.ftl}</value>
+    </util:list>
+
+    <util:list id="messageSourceBasenames">
+        <value>${spring.messageSource.basename}</value>
+        <value>classpath:validations/ValidationMessages</value>
+    </util:list>
+
+    <!-- Configurer for FtlViewResolver -->
+    <bean id="freeMarkerConfigurer" class="org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer"
+          p:templateLoaderPath="${spring.freeMarkerConfigurer.templateLoaderPath}"
+          p:defaultEncoding="UTF-8"
+          p:freemarkerSettings-ref="freeMarkerProperties"
+    />
+    <util:properties id="freeMarkerProperties">
+        <prop key="template_update_delay">3600</prop>
+        <prop key="default_encoding">UTF-8</prop>
+        <prop key="output_encoding">UTF-8</prop>
+        <prop key="auto_import">"/spring.ftl" as spring</prop>
+        <prop key="url_escaping_charset">true</prop>
+        <prop key="whitespace_stripping">true</prop>
+    </util:properties>
+
+    <!-- Source for LocaleResolver -->
+    <bean id="messageSource"
+          class="org.springframework.context.support.ReloadableResourceBundleMessageSource"
+          p:basenames-ref="messageSourceBasenames"
+          p:defaultEncoding="UTF-8"
+    />
+
+    <!-- Source for ThemResolver -->
+    <bean id="themeSource" class="org.springframework.ui.context.support.ResourceBundleThemeSource"
+          p:basenamePrefix="${spring.themeSource.basenamePrefix}"
+          p:defaultEncoding="UTF-8"
+    />
+
+    <!--<bean id="validator" class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean"-->
+          <!--p:validationMessageSource-ref="messageSource"-->
+          <!--p:validationProperties=""-->
+    <!--/>-->
+
+    <!--<bean id="projectValidatorUtil" class="iy.jspspring.training.validator.ProjectValidatorUtil"/>-->
+    <!--<bean id="theme" class="iy.jspspring.training.pojo.Theme" scope="prototype"-->
+          <!--c:name="Vasia"/>-->
+
+    <!--<bean id="theme1" class="iy.jspspring.training.pojo.Theme" scope="prototype"-->
+          <!--c:name="Vasia"/>-->
+
+    <!--<bean id="generator" class="iy.jspspring.training.pojo.ThemeGenerator">-->
+        <!--<lookup-method name="getWorker" bean="theme"/>-->
+    <!--</bean>-->
+
+</beans>
